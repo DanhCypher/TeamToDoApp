@@ -22,31 +22,26 @@ jobs:
           node-version: '16'
 
       - name: Install dependencies
-        run: npm ci  # Cài đặt phụ thuộc từ package-lock.json để đảm bảo môi trường sạch sẽ
+        run: npm ci  # Cài đặt lại các phụ thuộc từ package-lock.json để đảm bảo môi trường sạch
 
-      - name: Give Jest executable permission
-        run: chmod +x ./node_modules/.bin/jest  # Đảm bảo Jest có quyền thực thi
+      - name: Give Jest executable permission  # Thêm quyền thực thi cho jest
+        run: chmod +x ./node_modules/.bin/jest
 
       - name: Run tests
-        run: npx jest --passWithNoTests  # Thêm flag --passWithNoTests để bỏ qua lỗi nếu không có bài kiểm thử
+        run: npm test
 
   deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Đảm bảo chỉ triển khai khi nhánh chính (main) được cập nhật
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Heroku CLI
-        run: |
-          curl https://cli-assets.heroku.com/install.sh | sh  # Cài đặt Heroku CLI
-
       - name: Deploy to Heroku
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
         run: |
           git remote add heroku https://git.heroku.com/${{ secrets.HEROKU_APP_NAME }}.git
-          git push heroku main  # Triển khai lên Heroku
+          git push heroku main
